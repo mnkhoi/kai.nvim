@@ -1,0 +1,40 @@
+---@alias pi.type.KnownApi
+---| "openai-completions"
+---| "mistral-conversations"
+---| "openai-responses"
+---| "azure-openai-responses"
+---| "openai-codex-responses"
+---| "anthropic-messages"
+---| "bedrock-converse-stream"
+---| "google-generative-ai"
+---| "google-gemini-cli"
+---| "google-vertex"
+
+---@alias pi.type.Api pi.type.KnownApi | string
+
+---@alias pi.type.KnownProvider
+---| "amazon-bedrock"
+---| "anthropic"
+---| "google"
+---| "google-gemini-cli"
+---| "google-antigravity"
+---| "google-vertex"
+---| "openai"
+---| "azure-openai-responses"
+---| "openai-codex"
+---| "github-copilot"
+---| "xai"
+---| "groq"
+---| "cerebras"
+---| "openrouter"
+---| "vercel-ai-gateway"
+---| "zai"
+---| "mistral"
+---| "minimax"
+---| "minimax-cn"
+---| "huggingface"
+---| "opencode"
+---| "opencode-go"
+---| "kimi-coding"
+
+---@alias pi.type.Provider pi.type.KnownProvider | string
