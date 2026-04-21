@@ -1,5 +1,6 @@
 local M = {}
 
+---Credit: Note this was taken from oil.nvim
 ---@param path string current path to get the git root
 ---@return string? root Root of the project if exists
 M.get_root = function(path)

@@ -87,3 +87,53 @@
 ---@field extensionPath string
 ---@field event string
 ---@field error string
+
+---@alias pi.rpc.events
+---| pi.rpc.events.agent_start
+---| pi.rpc.events.agent_end
+---| pi.rpc.events.turn_start
+---| pi.rpc.events.turn_end
+---| pi.rpc.events.message_start
+---| pi.rpc.events.message_update
+---| pi.rpc.events.message_end
+---| pi.rpc.events.tool_execution_start
+---| pi.rpc.events.tool_execution_update
+---| pi.rpc.events.tool_execution_end
+---| pi.rpc.events.queue_update
+---| pi.rpc.events.compaction_start
+---| pi.rpc.events.compaction_end
+---| pi.rpc.events.auto_retry_start
+---| pi.rpc.events.auto_retry_end
+---| pi.rpc.events.extension_error
+
+local M = {}
+
+---@type table<string, boolean> O(1) - lookup of type matching to events
+M.registered_events = {
+	["agent_start"] = true,
+	["agent_end"] = true,
+	["turn_start"] = true,
+	["turn_end"] = true,
+	["message_start"] = true,
+	["message_update"] = true,
+	["message_end"] = true,
+	["tool_execution_start"] = true,
+	["tool_execution_update"] = true,
+	["tool_execution_end"] = true,
+	["queue_update"] = true,
+	["compaction_start"] = true,
+	["compaction_end"] = true,
+	["auto_retry_start"] = true,
+	["auto_retry_end"] = true,
+	["extension_error"] = true,
+}
+
+---@param data {type:string} data after deserializing through vim.json.decode
+---@return pi.rpc.events? events if possible if not then return nil if not events
+M.match = function(data)
+	if M.registered_events[data.type] then
+		return data
+	end
+end
+
+return M
