@@ -152,3 +152,89 @@
 ---@field description? string
 ---@field source "extension"|"prompt"|"skill"
 ---@field sourceInfo pi.type.SourceInfo
+
+--- :start: EVENTS
+
+---@class pi.type.events.base writing something here
+---@field type string
+
+---@class pi.type.events.start : pi.type.events.base
+---@field type "start"
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.text_start : pi.type.events.base
+---@field type "text_start"
+---@field contentIndex number
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.text_delta : pi.type.events.base
+---@field type "text_delta"
+---@field contentIndex number
+---@field delta string
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.text_end : pi.type.events.base
+---@field type "text_end"
+---@field contentIndex number
+---@field content string
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.thinking_start : pi.type.events.base
+---@field type "thinking_start"
+---@field contentIndex number
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.thinking_delta : pi.type.events.base
+---@field type "thinking_delta"
+---@field contentIndex number
+---@field delta string
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.thinking_end : pi.type.events.base
+---@field type "thinking_end"
+---@field contentIndex number
+---@field content string
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.toolcall_start : pi.type.events.base
+---@field type "toolcall_start"
+---@field contentIndex number
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.toolcall_delta : pi.type.events.base
+---@field type "toolcall_delta"
+---@field contentIndex number
+---@field delta string
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.toolcall_end : pi.type.events.base
+---@field type "toolcall_end"
+---@field contentIndex number
+---@field toolCall pi.type.ToolCall
+---@field partial pi.type.AssistantMessage
+
+---@class pi.type.events.done : pi.type.events.base
+---@field type "done"
+---@field reason "stop"|"length"|"toolUse"
+---@field message pi.type.AssistantMessage
+
+---@class pi.type.events.error : pi.type.events.base
+---@field type "text_start"
+---@field reason "aborted"|"error"
+---@field error pi.type.AssistantMessage
+
+---@alias pi.type.AssistantMessageEvent
+---| pi.type.events.start
+---| pi.type.events.text_start
+---| pi.type.events.text_delta
+---| pi.type.events.text_end
+---| pi.type.events.thinking_start
+---| pi.type.events.thinking_delta
+---| pi.type.events.thinking_end
+---| pi.type.events.toolcall_start
+---| pi.type.events.toolcall_delta
+---| pi.type.events.toolcall_end
+---| pi.type.events.done
+---| pi.type.events.error
+
+--- :end: EVENTS
