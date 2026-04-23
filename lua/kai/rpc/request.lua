@@ -164,3 +164,30 @@
 ---| pi.rpc.req.session
 ---| pi.rpc.req.messages
 ---| pi.rpc.req.commands
+
+local M = {}
+
+---@type table<string, boolean> O(1) - lookup of type matching to events
+M.registered_request = {
+	["prompting"] = true,
+	["state"] = true,
+	["model"] = true,
+	["thinking"] = true,
+	["queue_modes"] = true,
+	["compacting"] = true,
+	["retry"] = true,
+	["bash"] = true,
+	["session"] = true,
+	["messages"] = true,
+	["commands"] = true,
+}
+
+---@param data {type:string} data after deserializing through vim.json.decode
+---@return pi.rpc.request? request if possible if not then return nil if not events
+M.match = function(data)
+	if M.registered_request[data.type] then
+		return data
+	end
+end
+
+return M
