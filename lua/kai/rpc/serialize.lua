@@ -17,7 +17,8 @@ local encode_opts = {
 }
 
 ---@param msg string message chunk from picode lib uv; \n delimited
----@return [pi.rpc.request|pi.rpc.response|pi.rpc.events, "request"|"response"|"events"]?
+---@return pi.rpc.request|pi.rpc.response|pi.rpc.events? msg_data the message data from msg as tbl form
+---@return "request"|"response"|"events"? msg_type type of message received
 M.deserialize = function(msg)
 	---@type boolean, table
 	local success, data = pcall(vim.json.decode, msg, decode_opts)
@@ -27,14 +28,30 @@ M.deserialize = function(msg)
 	end
 
 	if events.match(data) then
-		return { data, "events" }
+		return data, "events"
 	elseif request.match(data) then
-		return { data, "request" }
+		return data, "request"
 	elseif response.match(data) then
-		return { data, "response" }
+		return data, "response"
 	else
 		logger.warn("Invalid type")
 	end
 end
 
+---@param msg pi.rpc.request
+---@return string
+M.serialize = function(msg)
+	if vim.tbl_isempty(msg) then
+		return ""
+	end
+
+	---@type boolean, string
+	local success, data = pcall(vim.json.encode, msg, encode_opts)
+
+	if not success or data == "" then
+		return ""
+	else
+		return data
+	end
+end
 return M

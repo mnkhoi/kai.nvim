@@ -7,7 +7,7 @@ This is a fun little project for me to write a plugin for neovim to use pi-code 
 
 ## Planning
 
-- [ ] RPC Protocol for pi-mono
+- [x] RPC Protocol for pi-mono
 - [ ] Backend package to handle listening and writing to pi-mono process
 - [ ] Auth for Pi-Code
 - [ ] Seperate buffer for the chat
@@ -15,3 +15,7 @@ This is a fun little project for me to write a plugin for neovim to use pi-code 
 - [ ] Virtual text for small context implementation (p99 inspired)
 - [ ] Show thinking spinner
 - [ ] Extensions
+
+## Notes
+- use nvim_create_namespace for namespace to write virtual text
+- use nvim_buf_set_extmark to add/edit virtual text

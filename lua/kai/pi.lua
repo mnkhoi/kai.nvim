@@ -2,6 +2,8 @@ local M = {}
 
 local uv = vim.uv or vim.loop
 local git = require("kai.git")
+local rpc = require("kai.rpc.serialize")
+local logger = require("kai.logger")
 
 local exit_handler = function(code, signal)
 	print("exit code", code)
@@ -10,7 +12,17 @@ end
 
 ---@param err string? error code
 ---@param data string? data that is received from pi
-local read_handler = function(err, data) end
+local read_handler = function(err, data)
+	if err then
+		logger.error(err)
+		return
+	elseif not data then
+		--- End of file reached
+		return
+	end
+
+	local msg_data, msg_type = rpc.deserialize(data)
+end
 
 local initialized = false
 M.start = function()
@@ -34,8 +46,8 @@ M.start = function()
 		cwd = git.get_root(curr_path) or curr_path,
 		hide = false,
 		detached = false,
-		uid = nil,
-		gid = nil,
+		uid = "",
+		gid = "",
 		verbatim = false,
 	}, exit_handler)
 
