@@ -5,6 +5,8 @@ for k, v in pairs(vim.log.levels) do
 	levels_reverse[v] = k
 end
 
+---@class kai.logger
+---@field level vim.log.levels
 local Log = {}
 
 ---@type vim.log.levels
