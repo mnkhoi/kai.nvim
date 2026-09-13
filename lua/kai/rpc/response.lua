@@ -203,3 +203,25 @@
 ---| pi.rpc.res.messages
 ---| pi.rpc.res.commands
 ---| pi.rpc.res.error
+
+local M = {}
+
+---@param data table decoded JSON line
+---@return table? response object if type=="response"
+function M.match(data)
+	if type(data) ~= "table" then
+		return nil
+	end
+	if data.type == "response" and type(data.command) == "string" and data.success ~= nil then
+		return data
+	end
+	return nil
+end
+
+---@param data table
+---@return boolean is_error_response
+function M.is_error(data)
+	return data ~= nil and data.type == "response" and data.success == false
+end
+
+return M

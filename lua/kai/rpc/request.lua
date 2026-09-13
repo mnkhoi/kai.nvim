@@ -164,3 +164,91 @@
 ---| pi.rpc.req.session
 ---| pi.rpc.req.messages
 ---| pi.rpc.req.commands
+
+-- Runtime helpers (the annotations above are doc-only).
+local M = {}
+
+local counter = 0
+
+---Generate a unique request id for correlation.
+---@return string
+function M.new_id()
+	counter = counter + 1
+	return string.format("kai-%d-%d", uv_now_ms(), counter)
+end
+
+function uv_now_ms()
+	local uv = vim.uv or vim.loop
+	if uv and uv.now then
+		return uv.now()
+	end
+	return math.floor(vim.fn.reltimefloat(vim.fn.reltime()) * 1000)
+end
+
+---@type table<string, boolean> command types we send (vs events/responses/extension_ui_*).
+M.command_types = {
+	prompt = true,
+	steer = true,
+	follow_up = true,
+	abort = true,
+	clear_queue = true,
+	new_session = true,
+	get_state = true,
+	get_messages = true,
+	set_model = true,
+	cycle_model = true,
+	get_available_models = true,
+	set_thinking_level = true,
+	cycle_thinking_level = true,
+	get_available_thinking_levels = true,
+	set_steering_mode = true,
+	set_follow_up_mode = true,
+	compact = true,
+	set_auto_compaction = true,
+	set_auto_retry = true,
+	abort_retry = true,
+	bash = true,
+	abort_bash = true,
+	get_session_stats = true,
+	export_html = true,
+	switch_session = true,
+	fork = true,
+	clone = true,
+	get_fork_messages = true,
+	get_entries = true,
+	get_tree = true,
+	get_last_assistant_text = true,
+	set_session_name = true,
+	get_commands = true,
+	extension_ui_response = true,
+}
+
+---@param data table decoded JSON line
+---@return table? the same table if it looks like an outbound command type
+function M.match(data)
+	if type(data) ~= "table" then
+		return nil
+	end
+	if type(data.type) == "string" and M.command_types[data.type] then
+		-- extension_ui_response is only ever sent by us; still classify as request-side
+		return data
+	end
+	return nil
+end
+
+---@param message string user prompt text
+---@param opts {id:string?, images:pi.type.ImageContent[]?, streamingBehavior:"steer"|"followUp"?}?
+---@return pi.rpc.req.prompt
+function M.prompt(message, opts)
+	opts = opts or {}
+	local req = { id = opts.id or M.new_id(), type = "prompt", message = message }
+	if opts.images then
+		req.images = opts.images
+	end
+	if opts.streamingBehavior then
+		req.streamingBehavior = opts.streamingBehavior
+	end
+	return req
+end
+
+return M
