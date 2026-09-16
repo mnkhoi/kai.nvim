@@ -18,6 +18,8 @@ local M = {}
 ---@class kai.opts
 ---@field pi_cmd string Binary to spawn (default "pi")
 ---@field pi_args string[] Extra CLI args prepended before --mode rpc (e.g. {"--provider","anthropic"})
+---@field model string Model we want to connect to (default "big-pickle")
+---@field thinking "off"|"minimal"|"low"|"medium"|"high"|"xhigh"|"max" Thinking level of the model (default "off")
 ---@field cwd string? Working directory for pi (default: git root of current file or vim cwd)
 ---@field no_session boolean If true pass --no-session (ephemeral)
 ---@field session_dir string? Custom session storage dir (--session-dir)
@@ -59,6 +61,8 @@ M.defaults = {
 	},
 	log_level = vim.log.levels.WARN,
 	config_file = nil,
+	model = "big-pickle",
+	thinking = "off",
 }
 
 ---@type kai.opts
@@ -119,7 +123,7 @@ end
 function M.build_pi_args()
 	local o = M.options
 	---@type string[]
-	local args = { "--mode", "rpc" }
+	local args = { "--mode", "rpc", "--model", o.model, "--thinking", o.thinking }
 	for _, a in ipairs(o.pi_args or {}) do
 		args[#args + 1] = a
 	end

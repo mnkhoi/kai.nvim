@@ -154,6 +154,11 @@ function M.start(opts)
 			args = args,
 			cwd = cwd,
 			stdio = { M.pipes.stdin, M.pipes.stdout, M.pipes.stderr },
+			env = nil,
+			uid = nil,
+			gid = nil,
+			verbatim = true,
+			detached = false,
 			hide = true,
 		}, function(code, signal)
 			vim.schedule(function()

@@ -24,7 +24,7 @@ M.widgets = {} ---@type table<string,string[]>
 M.history = {} ---@type string[]
 M.history_idx = 0
 M.thinking_line = nil ---@type integer?
-M.default_winbar = " kai · pi "
+M.default_winbar = "   "
 
 -- ── buffer helpers ────────────────────────────────────────────────────────
 
@@ -42,13 +42,13 @@ end
 
 local function unlock()
 	if is_valid(M.chat_buf) then
-		vim.api.nvim_buf_set_option(M.chat_buf, "modifiable", true)
+		vim.api.nvim_set_option_value("modifiable", true, { buf = M.chat_buf })
 	end
 end
 
 local function lock()
 	if is_valid(M.chat_buf) then
-		vim.api.nvim_buf_set_option(M.chat_buf, "modifiable", false)
+		vim.api.nvim_set_option_value("modifiable", false, { buf = M.chat_buf })
 	end
 end
 
@@ -116,19 +116,20 @@ function M.open()
 	M.chat_buf = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_win_set_buf(M.chat_win, M.chat_buf)
 	vim.api.nvim_win_set_width(M.chat_win, wcfg.width or 80)
-	vim.api.nvim_buf_set_option(M.chat_buf, "buftype", "nofile")
-	vim.api.nvim_buf_set_option(M.chat_buf, "bufhidden", "hide")
-	vim.api.nvim_buf_set_option(M.chat_buf, "swapfile", false)
-	vim.api.nvim_buf_set_option(M.chat_buf, "filetype", "markdown")
-	vim.api.nvim_buf_set_option(M.chat_buf, "modifiable", false)
-	vim.api.nvim_buf_set_option(M.chat_buf, "wrap", true)
-	vim.api.nvim_buf_set_option(M.chat_buf, "linebreak", true)
-	vim.api.nvim_buf_set_option(M.chat_buf, "cursorline", true)
-	vim.api.nvim_win_set_option(M.chat_win, "number", false)
-	vim.api.nvim_win_set_option(M.chat_win, "relativenumber", false)
-	vim.api.nvim_win_set_option(M.chat_win, "wrap", true)
-	vim.api.nvim_win_set_option(M.chat_win, "winfixwidth", true)
-	pcall(vim.api.nvim_win_set_option, M.chat_win, "winbar", M.default_winbar)
+	vim.api.nvim_set_option_value("buftype", "nofile", { buf = M.chat_buf })
+	vim.api.nvim_set_option_value("bufhidden", "hide", { buf = M.chat_buf })
+	vim.api.nvim_set_option_value("swapfile", false, { buf = M.chat_buf })
+	vim.api.nvim_set_option_value("filetype", "markdown", { buf = M.chat_buf })
+	vim.api.nvim_set_option_value("modifiable", false, { buf = M.chat_buf })
+	vim.wo[M.chat_win].wrap = true
+	vim.wo[M.chat_win].linebreak = true
+	vim.wo[M.chat_win].cursorline = true
+	vim.wo[M.chat_win].number = false
+	vim.wo[M.chat_win].relativenumber = false
+	vim.wo[M.chat_win].fillchars = "eob: "
+
+	vim.api.nvim_set_option_value("winfixwidth", true, { win = M.chat_win })
+	pcall(vim.api.nvim_set_option_value, "winbar", M.default_winbar, { win = M.chat_win })
 	pcall(vim.api.nvim_buf_set_name, M.chat_buf, "kai://chat")
 
 	-- Input window below chat
@@ -137,15 +138,21 @@ function M.open()
 	M.input_buf = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_win_set_buf(M.input_win, M.input_buf)
 	vim.api.nvim_win_set_height(M.input_win, wcfg.input_height or 6)
-	vim.api.nvim_buf_set_option(M.input_buf, "buftype", "nofile")
-	vim.api.nvim_buf_set_option(M.input_buf, "bufhidden", "hide")
-	vim.api.nvim_buf_set_option(M.input_buf, "swapfile", false)
-	vim.api.nvim_buf_set_option(M.input_buf, "filetype", "markdown")
-	vim.api.nvim_buf_set_option(M.input_buf, "wrap", true)
-	vim.api.nvim_win_set_option(M.input_win, "number", false)
-	vim.api.nvim_win_set_option(M.input_win, "relativenumber", false)
-	vim.api.nvim_win_set_option(M.input_win, "winfixheight", true)
-	pcall(vim.api.nvim_win_set_option, M.input_win, "winbar", " message · <CR> send · <C-c> clear ")
+	vim.api.nvim_set_option_value("buftype", "nofile", { buf = M.input_buf })
+	vim.api.nvim_set_option_value("bufhidden", "hide", { buf = M.input_buf })
+	vim.api.nvim_set_option_value("swapfile", false, { buf = M.input_buf })
+	vim.api.nvim_set_option_value("filetype", "markdown", { buf = M.input_buf })
+
+	vim.bo[M.input_buf].bufhidden = hide
+
+	vim.wo[M.chat_win].wrap = true
+	vim.wo[M.chat_win].number = false
+	vim.wo[M.chat_win].relativenumber = false
+	vim.wo[M.chat_win].linebreak = true
+	vim.wo[M.chat_win].winfixheight = true
+	vim.wo[M.chat_win].fillchars = "eob: "
+
+	pcall(vim.api.nvim_set_option_value, "winbar", " message · <CR> send · <C-c> clear ", M.input_win)
 	pcall(vim.api.nvim_buf_set_name, M.input_buf, "kai://input")
 
 	M.setup_keymaps()
@@ -268,7 +275,7 @@ function M.submit(text)
 		M.open()
 	end
 	M.append_user(text)
-	pi.prompt(text, function(resp)
+	pi.prompt(text, {}, function(resp)
 		if not resp.success then
 			M.append_lines({ "", "> ⚠️ `" .. tostring(resp.error or "prompt rejected") .. "`", "" })
 		end
@@ -755,7 +762,15 @@ function M.attach_backend(pi)
 	end)
 
 	pi.on("auto_retry_start", function(ev)
-		M.append_system(string.format("retry %d/%d in %dms: %s", ev.attempt or 0, ev.maxAttempts or 0, ev.delayMs or 0, tostring(ev.errorMessage or ""):sub(1, 200)))
+		M.append_system(
+			string.format(
+				"retry %d/%d in %dms: %s",
+				ev.attempt or 0,
+				ev.maxAttempts or 0,
+				ev.delayMs or 0,
+				tostring(ev.errorMessage or ""):sub(1, 200)
+			)
+		)
 	end)
 
 	pi.on("queue_update", function(ev)
@@ -766,7 +781,9 @@ function M.attach_backend(pi)
 	end)
 
 	pi.on("extension_error", function(ev)
-		M.append_system("extension error [" .. tostring(ev.event or "?") .. "]: " .. tostring(ev.error or "?"):sub(1, 300))
+		M.append_system(
+			"extension error [" .. tostring(ev.event or "?") .. "]: " .. tostring(ev.error or "?"):sub(1, 300)
+		)
 	end)
 
 	pi.on("response", function(resp)
