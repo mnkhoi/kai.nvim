@@ -46,8 +46,8 @@ M.defaults = {
 	no_extensions = false,
 	window = {
 		placement = "right",
-		width = 80,
-		input_height = 6,
+		width = 60,
+		input_height = 2,
 		border = "rounded",
 	},
 	spinner = {

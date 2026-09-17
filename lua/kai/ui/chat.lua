@@ -102,58 +102,12 @@ function M.open()
 		return
 	end
 	local cfg_ok, cfg = pcall(require, "kai.config")
-	local wcfg = (cfg_ok and cfg.options.window) or { placement = "right", width = 80, input_height = 6 }
+	local wcfg = (cfg_ok and cfg.options.window) or { placement = "right", width = 60, input_height = 2 }
 
 	M.prev_win = vim.api.nvim_get_current_win()
 
-	-- Chat window
-	if (wcfg.placement or "right") == "left" then
-		vim.cmd("topleft vsplit")
-	else
-		vim.cmd("botright vsplit")
-	end
-	M.chat_win = vim.api.nvim_get_current_win()
-	M.chat_buf = vim.api.nvim_create_buf(false, true)
-	vim.api.nvim_win_set_buf(M.chat_win, M.chat_buf)
-	vim.api.nvim_win_set_width(M.chat_win, wcfg.width or 80)
-	vim.api.nvim_set_option_value("buftype", "nofile", { buf = M.chat_buf })
-	vim.api.nvim_set_option_value("bufhidden", "hide", { buf = M.chat_buf })
-	vim.api.nvim_set_option_value("swapfile", false, { buf = M.chat_buf })
-	vim.api.nvim_set_option_value("filetype", "markdown", { buf = M.chat_buf })
-	vim.api.nvim_set_option_value("modifiable", false, { buf = M.chat_buf })
-	vim.wo[M.chat_win].wrap = true
-	vim.wo[M.chat_win].linebreak = true
-	vim.wo[M.chat_win].cursorline = true
-	vim.wo[M.chat_win].number = false
-	vim.wo[M.chat_win].relativenumber = false
-	vim.wo[M.chat_win].fillchars = "eob: "
-
-	vim.api.nvim_set_option_value("winfixwidth", true, { win = M.chat_win })
-	pcall(vim.api.nvim_set_option_value, "winbar", M.default_winbar, { win = M.chat_win })
-	pcall(vim.api.nvim_buf_set_name, M.chat_buf, "kai://chat")
-
-	-- Input window below chat
-	vim.cmd("belowright split")
-	M.input_win = vim.api.nvim_get_current_win()
-	M.input_buf = vim.api.nvim_create_buf(false, true)
-	vim.api.nvim_win_set_buf(M.input_win, M.input_buf)
-	vim.api.nvim_win_set_height(M.input_win, wcfg.input_height or 6)
-	vim.api.nvim_set_option_value("buftype", "nofile", { buf = M.input_buf })
-	vim.api.nvim_set_option_value("bufhidden", "hide", { buf = M.input_buf })
-	vim.api.nvim_set_option_value("swapfile", false, { buf = M.input_buf })
-	vim.api.nvim_set_option_value("filetype", "markdown", { buf = M.input_buf })
-
-	vim.bo[M.input_buf].bufhidden = hide
-
-	vim.wo[M.chat_win].wrap = true
-	vim.wo[M.chat_win].number = false
-	vim.wo[M.chat_win].relativenumber = false
-	vim.wo[M.chat_win].linebreak = true
-	vim.wo[M.chat_win].winfixheight = true
-	vim.wo[M.chat_win].fillchars = "eob: "
-
-	pcall(vim.api.nvim_set_option_value, "winbar", " message · <CR> send · <C-c> clear ", M.input_win)
-	pcall(vim.api.nvim_buf_set_name, M.input_buf, "kai://input")
+	M.create_chat(wcfg)
+	M.create_input(wcfg)
 
 	M.setup_keymaps()
 	M.seed_welcome()
@@ -161,6 +115,66 @@ function M.open()
 	context.refresh_input_hint(M.input_buf)
 	vim.api.nvim_set_current_win(M.input_win)
 	vim.cmd("startinsert")
+end
+
+--- Create the chat window
+--- @param wcfg kai.window.opts Window config options
+function M.create_chat(wcfg)
+	if (wcfg.placement or "right") == "left" then
+		vim.cmd("topleft vsplit")
+	else
+		vim.cmd("botright vsplit")
+	end
+	M.chat_win = vim.api.nvim_get_current_win()
+	M.chat_buf = vim.api.nvim_create_buf(false, true)
+
+	vim.api.nvim_win_set_buf(M.chat_win, M.chat_buf)
+	vim.api.nvim_win_set_width(M.chat_win, wcfg.width or 80)
+
+	vim.bo[M.chat_buf].buftype = "nofile"
+	vim.bo[M.chat_buf].bufhidden = "hide"
+	vim.bo[M.chat_buf].swapfile = false
+	vim.bo[M.chat_buf].filetype = "kai-chat"
+	vim.bo[M.chat_buf].modifiable = false
+
+	vim.wo[M.chat_win].wrap = true
+	vim.wo[M.chat_win].linebreak = true
+	vim.wo[M.chat_win].cursorline = true
+	vim.wo[M.chat_win].number = false
+	vim.wo[M.chat_win].relativenumber = false
+	vim.wo[M.chat_win].fillchars = "eob: "
+	vim.wo[M.chat_win].foldcolumn = "0"
+	vim.wo[M.chat_win].cursorline = false
+
+	vim.api.nvim_set_option_value("winfixwidth", true, { win = M.chat_win })
+	pcall(vim.api.nvim_set_option_value, "winbar", M.default_winbar, { win = M.chat_win })
+	pcall(vim.api.nvim_buf_set_name, M.chat_buf, "kai://chat")
+end
+
+--- Create the input window below the chat window
+--- @param wcfg kai.window.opts Window config options
+function M.create_input(wcfg)
+	vim.cmd("belowright split")
+	M.input_win = vim.api.nvim_get_current_win()
+	M.input_buf = vim.api.nvim_create_buf(false, true)
+
+	vim.api.nvim_win_set_buf(M.input_win, M.input_buf)
+	vim.api.nvim_win_set_height(M.input_win, wcfg.input_height or 6)
+
+	vim.bo[M.input_buf].buftype = "nofile"
+	vim.bo[M.input_buf].bufhidden = "hide"
+	vim.bo[M.input_buf].swapfile = false
+	vim.bo[M.input_buf].filetype = "kai-input"
+
+	vim.wo[M.input_win].wrap = true
+	vim.wo[M.input_win].number = false
+	vim.wo[M.input_win].relativenumber = false
+	vim.wo[M.input_win].linebreak = true
+	vim.wo[M.input_win].winfixheight = true
+	vim.wo[M.input_win].fillchars = "eob: "
+
+	pcall(vim.api.nvim_set_option_value, "winbar", " message · <CR> send · <C-c> clear ", M.input_win)
+	pcall(vim.api.nvim_buf_set_name, M.input_buf, "kai://input")
 end
 
 function M.close()
